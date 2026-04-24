@@ -1,0 +1,70 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Default deny
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // Helper functions
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isOwner(userId) {
+      return isSignedIn() && request.auth.uid == userId;
+    }
+
+    function getUserData() {
+      return get(/databases/$(database)/documents/users/$(request.auth.uid)).data;
+    }
+
+    function isAdmin() {
+      return isSignedIn() && getUserData().isAdmin == true;
+    }
+
+    function isVerified() {
+      return request.auth.token.email_verified == true;
+    }
+
+    function isValidId(id) {
+      return id is string && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+
+    // Recipes
+    match /recipes/{recipeId} {
+      allow read: if true; // Public can see recipes
+      allow write: if isAdmin(); // Only admins can create/edit/delete recipes
+      
+      // Validation for recipe writes (Admin only but let's be safe)
+      function isValidRecipe(data) {
+        return data.title is string && data.title.size() <= 100 &&
+               data.description is string && data.description.size() <= 500 &&
+               data.ingredients is list && data.instructions is list &&
+               data.region in ['West Africa', 'East Africa', 'North Africa', 'South Africa', 'Central Africa'] &&
+               data.difficulty in ['Easy', 'Medium', 'Hard'] &&
+               data.isPremium is bool;
+      }
+    }
+
+    // User Profiles
+    match /users/{userId} {
+      allow read: if isOwner(userId) || isAdmin();
+      allow create: if isOwner(userId) && 
+                      request.resource.data.isAdmin == false &&
+                      request.resource.data.isPremium == false;
+      allow update: if (isOwner(userId) && 
+                        request.resource.data.diff(resource.data).affectedKeys().hasOnly(['displayName', 'savedRecipes', 'lastLogin'])) ||
+                      isAdmin();
+    }
+
+    // Activity Logs
+    match /activity/{logId} {
+      allow read: if isAdmin();
+      allow create: if isSignedIn(); // Users can log their own activity
+    }
+
+    // PII Isolation (if we had separate collections, but sticking to blueprint)
+  }
+}

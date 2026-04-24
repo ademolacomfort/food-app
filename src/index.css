@@ -1,0 +1,15 @@
+@theme {
+  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, monospace;
+  --color-terracotta: #E2725B;
+  --color-deepgreen: #013220;
+  --color-gold: #D4AF37;
+  --color-earth: #8B4513;
+}
+
+@import "tailwindcss";
+
+body {
+  background-color: #FAFAFA;
+  color: #013220;
+}

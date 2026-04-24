@@ -1,0 +1,64 @@
+{
+  "entities": {
+    "Recipe": {
+      "title": "Recipe",
+      "description": "Information about an African dish.",
+      "type": "object",
+      "properties": {
+        "title": { "type": "string", "description": "The name of the dish." },
+        "description": { "type": "string", "description": "A brief overview of the recipe." },
+        "ingredients": { "type": "array", "description": "List of required ingredients." },
+        "instructions": { "type": "array", "description": "Step-by-step preparation steps." },
+        "region": { "type": "string", "enum": ["West Africa", "East Africa", "North Africa", "South Africa", "Central Africa"], "description": "The African region the dish originates from." },
+        "difficulty": { "type": "string", "enum": ["Easy", "Medium", "Hard"], "description": "Preparation difficulty level." },
+        "isPremium": { "type": "boolean", "description": "Whether the recipe is locked for premium users." },
+        "imageUrl": { "type": "string", "description": "URL to the dish image." },
+        "prepTime": { "type": "string", "description": "Estimated preparation time." },
+        "category": { "type": "string", "description": "e.g., Soup, Rice, Main, Snack" },
+        "buyIngredientsLink": { "type": "string", "description": "URL to buy ingredients online." }
+      },
+      "required": ["title", "description", "ingredients", "instructions", "region", "difficulty", "isPremium"]
+    },
+    "UserProfile": {
+      "title": "UserProfile",
+      "description": "Information about a registered user.",
+      "type": "object",
+      "properties": {
+        "displayName": { "type": "string" },
+        "email": { "type": "string" },
+        "isPremium": { "type": "boolean" },
+        "savedRecipes": { "type": "array", "description": "Array of recipe IDs saved by the user." },
+        "lastLogin": { "type": "string", "format": "date-time" },
+        "isAdmin": { "type": "boolean" }
+      },
+      "required": ["email", "isPremium", "isAdmin"]
+    },
+    "Activity": {
+      "title": "ActivityLog",
+      "description": "Log of user activity for admin monitoring.",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string" },
+        "userEmail": { "type": "string" },
+        "action": { "type": "string" },
+        "timestamp": { "type": "string", "format": "date-time" },
+        "details": { "type": "string" }
+      },
+      "required": ["userId", "action", "timestamp"]
+    }
+  },
+  "firestore": {
+    "/recipes/{recipeId}": {
+      "schema": "Recipe",
+      "description": "Collection of all recipes."
+    },
+    "/users/{userId}": {
+      "schema": "UserProfile",
+      "description": "User profile data."
+    },
+    "/activity": {
+      "schema": "Activity",
+      "description": "Global activity logs for administrators."
+    }
+  }
+}
